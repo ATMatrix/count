@@ -64,7 +64,7 @@ async function count() {
     if (fromBlock >= 4259357) {
       interval = 100000;
     }
-    toBlock += interval
+    toBlock = fromBlock + interval;
     if (toBlock > snapshot) {
       toBlock = snapshot
     }
@@ -92,11 +92,12 @@ async function count() {
       accounts.add(xAddress(log.topics[2]))
     })
     console.log("accounts.size:", accounts.size)
-    fromBlock += interval
+    fromBlock = toBlock
   }
 
   fs.outputFileSync('./accounts.json', Array.from(accounts));
 
+  let promises = [];
   for (let address of accounts) {
     opts = {
       uri: 'https://api.etherscan.io/api',
@@ -105,31 +106,44 @@ async function count() {
         action: 'tokenbalance',
         contractaddress: '0x887834d3b8d450b6bab109c252df3da286d73ce4',
         address,
-        tag: snapshot,
+        tag: "latest",
         apikey: 'DTXTXHA7MVZNP4EJBR3IF2IRAFBAETYPJY',
       },
       json: true,
     }
 
-    let balance = await fetchLogs(opts);
-    console.log(`account:${address},balance:${balance}`)
-    if (balance > 0) {
-      holdAccounts.set(address, balance);
-    } else {
-      heldAccounts.set(address, balance);
-    }
+    promises.push(fetchLogs(opts));
+    // let balance = await fetchLogs(opts);
+    // console.log(`account:${address},balance:${balance}`)
+    // if (balance > 0) {
+    //   holdAccounts.set(address, balance);
+    // } else {
+    //   heldAccounts.set(address, balance);
+    // }
 
   }
 
-  console.log("=================")
-  console.log("accout:", accounts.size);
-  console.log("holders:", holdAccounts.size);
-  console.log("balanceAcount:", holdAccounts.size + heldAccounts.size);
-  
-  let heldfile = `./held--${snapshot}.json`
-  let holdfile = `./hold--${snapshot}.json`
-  fs.outputJsonSync(holdfile, strMapToObj(holdAccounts));
-  fs.outputJsonSync(heldfile, strMapToObj(heldAccounts));
+  Promise.all(promises).then(values => {
+    let addresses = Array.from(accounts);
+    console.log(addresses.length+'--'+values.length);
+    for (let i=0;i<addresses.length;i++) {
+      console.log(`account:${addresses[i]},balance:${values[i]}`)
+      if (values[i] > 0) {
+        holdAccounts.set(addresses[i], values[i]);
+      } else {
+        heldAccounts.set(addresses[i], values[i]);
+      }
+    }
+    console.log("=================")
+    console.log("accout:", accounts.size);
+    console.log("holders:", holdAccounts.size);
+    console.log("balanceAcount:", holdAccounts.size + heldAccounts.size);
+    
+    let heldfile = `./held--${snapshot}.json`
+    let holdfile = `./hold--${snapshot}.json`
+    fs.outputJsonSync(holdfile, strMapToObj(holdAccounts));
+    fs.outputJsonSync(heldfile, strMapToObj(heldAccounts));
+  })
 }
 
 function xAddress(a) {
