@@ -105,7 +105,7 @@ async function count() {
         action: 'tokenbalance',
         contractaddress: '0x887834d3b8d450b6bab109c252df3da286d73ce4',
         address,
-        tag: 'latest',
+        tag: snapshot,
         apikey: 'DTXTXHA7MVZNP4EJBR3IF2IRAFBAETYPJY',
       },
       json: true,
