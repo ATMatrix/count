@@ -1,0 +1,19 @@
+{
+  "name": "count",
+  "version": "1.0.0",
+  "description": "count",
+  "main": "count.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "count"
+  ],
+  "author": "hujw",
+  "license": "ISC",
+  "dependencies": {
+    "fs-extra": "^4.0.2",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2"
+  }
+}
