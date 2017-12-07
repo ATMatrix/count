@@ -1,7 +1,8 @@
 const fs = require('fs-extra')
+const _ = require('lodash');
+const BN = require('bignumber.js')
 
 let snapshot = process.argv[2]
-console.log(snapshot);
 
 let heldfile = `./held--${snapshot}.json`
 let holdfile = `./hold--${snapshot}.json`
@@ -20,18 +21,32 @@ heldAccounts.delete("0x00000000000000000000000000000000000000b2");
 heldAccounts.delete("0x8c161e726e783760f5ab709fcd0d07c74cbce59a");
 heldAccounts.delete("0x0000000000000000000000000000000000000000");
 
+let amount = new BN(0);
+
 heldAccounts.forEach( (value, key, map) => {
-  map.set(key, 10);
+  map.set(key, "10");
+  amount = amount.plus("10");
 })
 
 holdAccounts.forEach( (value, key, map) => {
-  map.set(key, value*0.01);
+  let balance = new BN(value);
+  if(balance.comparedTo(100) < 0) {
+    balance == new BN(100);
+  }
+  balance = balance.div(1e+20).toFixed(18, 1);
+  balance = _.trimEnd(balance, '0');
+  balance = _.trimEnd(balance, '.');
+  map.set(key, balance);
+  amount = amount.plus(balance);
 })
+
+console.log(amount.toString());
 
 let heldcontributefile = `./held--${snapshot}--contribute.json`
 let holdcontributefile = `./hold--${snapshot}--contribute.json`
 fs.outputJsonSync(holdcontributefile, strMapToObj(holdAccounts));
 fs.outputJsonSync(heldcontributefile, strMapToObj(heldAccounts));
+
 
 
 
