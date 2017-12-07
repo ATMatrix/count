@@ -9,6 +9,10 @@ let holdfile = `./hold--${snapshot}.json`
 let holdAccounts = objToStrMap(fs.readJsonSync(holdfile));
 let heldAccounts = objToStrMap(fs.readJsonSync(heldfile));
 
+console.log(holdAccounts.size);
+console.log(heldAccounts.size);
+console.log(holdAccounts.size + heldAccounts.size);
+
 holdAccounts.delete("0xe11bd1032fe0d7343e8de21f92f050ae8462a7d7");
 holdAccounts.delete("0x00000000000000000000000000000000000000b1");
 holdAccounts.delete("0x00000000000000000000000000000000000000b2");
@@ -29,11 +33,11 @@ heldAccounts.forEach( (value, key, map) => {
 })
 
 holdAccounts.forEach( (value, key, map) => {
-  let balance = new BN(value);
+  let balance = (new BN(value)).div(1e+18);
   if(balance.comparedTo(100) < 0) {
-    balance == new BN(100);
+    balance = new BN(100);
   }
-  balance = balance.div(1e+20).toFixed(18, 1);
+  balance = balance.div(100).toFixed(18, 1); 
   balance = _.trimEnd(balance, '0');
   balance = _.trimEnd(balance, '.');
   map.set(key, balance);
