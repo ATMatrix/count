@@ -33,3 +33,4 @@ held*.json
 /node_modules
 package-lock.json
 config.json
+AGT.json
