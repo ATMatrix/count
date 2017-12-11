@@ -27,14 +27,11 @@ build/Release
 node_modules
 
 .DS_Store
-accounts.json
 hold*.json
 held*.json
 /node_modules
 package-lock.json
 config.json
-AGT.json
 todo.json
 done.json
 doing.json
-airdrop*.json
