@@ -34,3 +34,7 @@ held*.json
 package-lock.json
 config.json
 AGT.json
+todo.json
+done.json
+doing.json
+airdrop*.json

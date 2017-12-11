@@ -11,8 +11,10 @@ async function run() {
 
   let todofile = `./todo.json`
   let donefile = `./done.json`
+  let doingfile = `./doing.json`
   let todos = objToStrMap(fs.readJsonSync(todofile));
   let dones = objToStrMap(fs.readJsonSync(donefile));
+  let doning = objToStrMap(fs.readJsonSync(doingfile));
 
   var web3 = new Web3(new Web3.providers.HttpProvider(config.endpoint));
   var privateKeyString = config.private_key;
@@ -29,29 +31,31 @@ async function run() {
   console.log(`Address ${owner} tokenBalance is ${tokenBalance}`);
   if (tokenBalance == 0) return;
 
-  const _to = '0xF6074de3a0dAE1710C0BCe11C56Bac0f413fe44D';
-  const tokenBalance2 = await agt.methods.balanceOf(_to).call();
-  console.log(`Address ${_to} tokenBalance is ${tokenBalance2}`);
-
-  let i = 0;
+  // let i = 0;
   for (let [key, value] of todos) {
-    if(i >= 10) break;
+    // if(i >= 1) break;
     console.log(key)
     console.log(value)
+    value = new BN(value);
+    value = value.mul(1e+18);
+    console.log('value',value.toNumber());    
     let tx = {};
     tx.address = key;
     const todoBalance = await agt.methods.balanceOf(key).call();
+    console.log(`Address ${key} tokenBalance is ${todoBalance}`);
     tx.balance = todoBalance;
     if (dones.has(key) || todoBalance > 0) {
       todos.delete(key);
-      todos.set(key, tx);
+      dones.set(key, tx);
+      doning.set(key, tx);
       console.log(`${key} has been done, move to dones`);
       continue;
     }
-    let receipt = await agt.methods['transfer(address,uint256)'](_to, 1)
+    
+    let receipt = await agt.methods['transfer(address,uint256)'](key, value)
       .send({
         from: owner,
-        gasPrice: 60000000000,
+        gasPrice: 25000000000,
         gas: 90000
       }, (err, hash) => {
         if (err) console.error(err);
@@ -61,14 +65,16 @@ async function run() {
     console.log(`${key} receipt : ${receipt}`);
     tx.receipt = receipt;
     const doneBalance = await agt.methods.balanceOf(key).call();
+    console.log(`Address ${key} tokenBalance is ${doneBalance}`);    
     tx.balance = doneBalance;
     todos.delete(key);
     dones.set(key, tx);
-    i++;
+    // i++;
   }
 
   fs.outputJsonSync(todofile, strMapToObj(todos));
   fs.outputJsonSync(donefile, strMapToObj(dones));
+  fs.outputJsonSync(doingfile, strMapToObj(doning));
 
 }
 
