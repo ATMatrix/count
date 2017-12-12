@@ -31,9 +31,9 @@ async function run() {
   console.log(`Address ${owner} tokenBalance is ${tokenBalance}`);
   if (tokenBalance == 0) return;
 
-  let i = 0;
+  // let i = 0;
   for (let [key, value] of todos) {
-    if(i >= 1) break;
+    // if(i >= 1) break;
     console.log(key)
     console.log(value)
     value = new BN(value);
@@ -44,13 +44,13 @@ async function run() {
     const todoBalance = await agt.methods.balanceOf(key).call();
     console.log(`Address ${key} tokenBalance is ${todoBalance}`);
     tx.balance = todoBalance;
-    // if (dones.has(key) || todoBalance > 0) {
-    //   todos.delete(key);
-    //   dones.set(key, tx);
-    //   doning.set(key, tx);
-    //   console.log(`${key} has been done, move to dones`);
-    //   continue;
-    // }
+    if (dones.has(key) || todoBalance > 0) {
+      todos.delete(key);
+      dones.set(key, tx);
+      doning.set(key, tx);
+      console.log(`${key} has been done, move to dones`);
+      continue;
+    }
     
     let receipt = await agt.methods['transfer(address,uint256)'](key, value)
       .send({
@@ -69,7 +69,7 @@ async function run() {
     tx.balance = doneBalance;
     todos.delete(key);
     dones.set(key, tx);
-    i++;
+    // i++;
   }
 
   fs.outputJsonSync(todofile, strMapToObj(todos));
